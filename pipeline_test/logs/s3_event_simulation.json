@@ -1,0 +1,16 @@
+{
+  "Records": [
+    {
+      "eventSource": "aws:s3",
+      "eventName": "ObjectCreated:Put",
+      "s3": {
+        "bucket": {
+          "name": "bovespa-raw-data-bucket"
+        },
+        "object": {
+          "key": "raw-data/year=2025/month=07/day=03/ibov_carteira_20250703.parquet"
+        }
+      }
+    }
+  ]
+}

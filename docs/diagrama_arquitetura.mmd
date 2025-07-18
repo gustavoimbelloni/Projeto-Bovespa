@@ -1,0 +1,91 @@
+graph TB
+    %% Definição de estilos
+    classDef awsService fill:#FF9900,stroke:#232F3E,stroke-width:2px,color:#FFFFFF
+    classDef dataStore fill:#3F48CC,stroke:#232F3E,stroke-width:2px,color:#FFFFFF
+    classDef process fill:#146EB4,stroke:#232F3E,stroke-width:2px,color:#FFFFFF
+    classDef external fill:#232F3E,stroke:#FF9900,stroke-width:2px,color:#FFFFFF
+    
+    %% Componentes externos
+    B3[🌐 Site B3<br/>sistemaswebb3-listados.b3.com.br<br/>Dados do IBovespa]:::external
+    
+    %% Camada de Ingestão
+    SCRAPER[📊 Script Python<br/>b3_scraper.py<br/>• BeautifulSoup4<br/>• Requests<br/>• Pandas]:::process
+    
+    %% Armazenamento Raw
+    S3_RAW[(🗄️ Amazon S3<br/>Raw Data Bucket<br/>Formato: Parquet<br/>Partição: year/month/day)]:::dataStore
+    
+    %% Orquestração
+    LAMBDA[⚡ AWS Lambda<br/>trigger-glue-job<br/>• Python 3.11<br/>• Boto3<br/>• Event-driven]:::awsService
+    
+    %% Processamento ETL
+    GLUE[🔄 AWS Glue<br/>bovespa-etl-job<br/>• Modo Visual<br/>• Spark 3.3<br/>• Python 3.9]:::awsService
+    
+    %% Armazenamento Refined
+    S3_REFINED[(🗄️ Amazon S3<br/>Refined Data Bucket<br/>Formato: Parquet<br/>Partição: year/month/day/tipo)]:::dataStore
+    
+    %% Catalogação
+    CATALOG[(📚 AWS Glue<br/>Data Catalog<br/>Database: default<br/>Table: bovespa_refined_data)]:::awsService
+    
+    %% Consulta
+    ATHENA[🔍 Amazon Athena<br/>Query Engine<br/>• SQL Interface<br/>• Serverless]:::awsService
+    
+    %% Monitoramento
+    CLOUDWATCH[📊 CloudWatch<br/>Logs & Metrics<br/>• Lambda logs<br/>• Glue job logs<br/>• Alertas]:::awsService
+    
+    %% Fluxo de dados
+    B3 -->|HTTP GET<br/>Daily Scraping| SCRAPER
+    SCRAPER -->|Upload Parquet<br/>Partitioned by Date| S3_RAW
+    S3_RAW -->|S3 Event<br/>ObjectCreated| LAMBDA
+    LAMBDA -->|StartJobRun<br/>Boto3 API| GLUE
+    
+    %% Transformações do Glue
+    GLUE -->|ETL Process| TRANSFORM[🔧 Transformações<br/>A: Agrupamento por tipo<br/>B: Renomear colunas<br/>C: Cálculo de datas]:::process
+    TRANSFORM -->|Save Parquet<br/>Partitioned| S3_REFINED
+    
+    %% Catalogação automática
+    GLUE -->|Auto Catalog<br/>Update Schema| CATALOG
+    S3_REFINED -.->|Metadata| CATALOG
+    
+    %% Consultas
+    CATALOG -->|Table Schema| ATHENA
+    S3_REFINED -->|Query Data| ATHENA
+    
+    %% Monitoramento
+    SCRAPER -.->|Logs| CLOUDWATCH
+    LAMBDA -.->|Execution Logs| CLOUDWATCH
+    GLUE -.->|Job Logs| CLOUDWATCH
+    
+    %% Agendamento (opcional)
+    EVENTBRIDGE[⏰ EventBridge<br/>Daily Schedule<br/>cron 0 18 * * ? *]:::awsService
+    EVENTBRIDGE -.->|Trigger Daily| SCRAPER
+    
+    %% Subgráficos para organização
+    subgraph "Camada de Ingestão"
+        B3
+        SCRAPER
+    end
+    
+    subgraph "Camada de Armazenamento Raw"
+        S3_RAW
+    end
+    
+    subgraph "Camada de Processamento"
+        LAMBDA
+        GLUE
+        TRANSFORM
+    end
+    
+    subgraph "Camada de Armazenamento Refined"
+        S3_REFINED
+        CATALOG
+    end
+    
+    subgraph "Camada de Consulta"
+        ATHENA
+    end
+    
+    subgraph "Camada de Monitoramento"
+        CLOUDWATCH
+        EVENTBRIDGE
+    end
+

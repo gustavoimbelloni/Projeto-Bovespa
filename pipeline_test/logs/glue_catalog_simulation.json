@@ -1,0 +1,43 @@
+{
+  "database": "bovespa_database",
+  "table": "bovespa_refined_data",
+  "location": "pipeline_test/refined-data",
+  "format": "parquet",
+  "partitions": [
+    "year",
+    "month",
+    "day",
+    "tipo"
+  ],
+  "schema": [
+    {
+      "name": "tipo",
+      "type": "string"
+    },
+    {
+      "name": "year",
+      "type": "int"
+    },
+    {
+      "name": "month",
+      "type": "int"
+    },
+    {
+      "name": "day",
+      "type": "int"
+    },
+    {
+      "name": "total_quantidade_teorica",
+      "type": "double"
+    },
+    {
+      "name": "participacao_media",
+      "type": "double"
+    },
+    {
+      "name": "total_acoes_por_tipo",
+      "type": "long"
+    }
+  ],
+  "created_at": "2025-07-03T14:07:14.892279"
+}

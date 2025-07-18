@@ -1,0 +1,122 @@
+{
+  "consulta_basica": {
+    "sql": "SELECT * FROM bovespa_refined_data LIMIT 5",
+    "resultado": [
+      {
+        "tipo": "ON",
+        "year": 2025,
+        "month": 7,
+        "day": 3,
+        "total_quantidade_teorica": 4400000000.0,
+        "participacao_media": 2.7,
+        "total_acoes_por_tipo": 1
+      },
+      {
+        "tipo": "ON EJ NM",
+        "year": 2025,
+        "month": 7,
+        "day": 3,
+        "total_quantidade_teorica": 5200000000.0,
+        "participacao_media": 3.5,
+        "total_acoes_por_tipo": 1
+      },
+      {
+        "tipo": "ON N1",
+        "year": 2025,
+        "month": 7,
+        "day": 3,
+        "total_quantidade_teorica": 5200000000.0,
+        "participacao_media": 9.2,
+        "total_acoes_por_tipo": 1
+      },
+      {
+        "tipo": "ON NM",
+        "year": 2025,
+        "month": 7,
+        "day": 3,
+        "total_quantidade_teorica": 4400000000.0,
+        "participacao_media": 3.45,
+        "total_acoes_por_tipo": 2
+      },
+      {
+        "tipo": "PN N1",
+        "year": 2025,
+        "month": 7,
+        "day": 3,
+        "total_quantidade_teorica": 7000000000.0,
+        "participacao_media": 6.699999999999999,
+        "total_acoes_por_tipo": 2
+      }
+    ]
+  },
+  "analise_por_tipo": {
+    "sql": "\n            SELECT tipo, \n                   total_acoes_por_tipo,\n                   total_quantidade_teorica,\n                   participacao_media\n            FROM bovespa_refined_data \n            ORDER BY total_quantidade_teorica DESC\n            ",
+    "resultado": [
+      {
+        "tipo": "PN N1",
+        "year": 2025,
+        "month": 7,
+        "day": 3,
+        "total_quantidade_teorica": 7000000000.0,
+        "participacao_media": 6.699999999999999,
+        "total_acoes_por_tipo": 2
+      },
+      {
+        "tipo": "ON EJ NM",
+        "year": 2025,
+        "month": 7,
+        "day": 3,
+        "total_quantidade_teorica": 5200000000.0,
+        "participacao_media": 3.5,
+        "total_acoes_por_tipo": 1
+      },
+      {
+        "tipo": "ON N1",
+        "year": 2025,
+        "month": 7,
+        "day": 3,
+        "total_quantidade_teorica": 5200000000.0,
+        "participacao_media": 9.2,
+        "total_acoes_por_tipo": 1
+      },
+      {
+        "tipo": "PN N2",
+        "year": 2025,
+        "month": 7,
+        "day": 3,
+        "total_quantidade_teorica": 4500000000.0,
+        "participacao_media": 8.5,
+        "total_acoes_por_tipo": 1
+      },
+      {
+        "tipo": "ON",
+        "year": 2025,
+        "month": 7,
+        "day": 3,
+        "total_quantidade_teorica": 4400000000.0,
+        "participacao_media": 2.7,
+        "total_acoes_por_tipo": 1
+      },
+      {
+        "tipo": "ON NM",
+        "year": 2025,
+        "month": 7,
+        "day": 3,
+        "total_quantidade_teorica": 4400000000.0,
+        "participacao_media": 3.45,
+        "total_acoes_por_tipo": 2
+      }
+    ]
+  },
+  "estatisticas_gerais": {
+    "sql": "\n            SELECT COUNT(*) as total_tipos,\n                   SUM(total_acoes_por_tipo) as total_acoes,\n                   SUM(total_quantidade_teorica) as quantidade_total,\n                   AVG(participacao_media) as participacao_geral\n            FROM bovespa_refined_data\n            ",
+    "resultado": [
+      {
+        "total_tipos": 6,
+        "total_acoes": "8",
+        "quantidade_total": 30700000000.0,
+        "participacao_geral": 5.675
+      }
+    ]
+  }
+}

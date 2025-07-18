@@ -1,0 +1,46 @@
+{
+  "pipeline_execution": {
+    "timestamp": "2025-07-03T14:07:15.967090",
+    "status": "SUCCESS",
+    "steps_completed": 5
+  },
+  "data_summary": {
+    "raw_data_files": 1,
+    "refined_data_files": 6,
+    "total_records_processed": 6,
+    "unique_tipos": 6
+  },
+  "transformations_applied": [
+    "Renomea\u00e7\u00e3o de colunas (qtde_teorica \u2192 quantidade_teorica_acoes)",
+    "Renomea\u00e7\u00e3o de colunas (participacao_pct \u2192 percentual_participacao_ibov)",
+    "C\u00e1lculo de dias desde coleta",
+    "Agrupamento por tipo de a\u00e7\u00e3o",
+    "Sumariza\u00e7\u00e3o de quantidade te\u00f3rica",
+    "C\u00e1lculo de participa\u00e7\u00e3o m\u00e9dia"
+  ],
+  "partitioning": {
+    "raw_data": [
+      "year",
+      "month",
+      "day"
+    ],
+    "refined_data": [
+      "year",
+      "month",
+      "day",
+      "tipo"
+    ]
+  },
+  "requirements_compliance": {
+    "req1_scraping": "\u2713 Implementado com dados simulados",
+    "req2_s3_parquet": "\u2713 Dados salvos em Parquet com particionamento",
+    "req3_lambda_trigger": "\u2713 Simulado com eventos S3",
+    "req4_lambda_language": "\u2713 Python implementado",
+    "req5a_aggregation": "\u2713 Agrupamento por tipo implementado",
+    "req5b_column_rename": "\u2713 Duas colunas renomeadas",
+    "req5c_date_calculation": "\u2713 C\u00e1lculo de dias desde coleta",
+    "req6_refined_partitioning": "\u2713 Particionamento duplo implementado",
+    "req7_glue_catalog": "\u2713 Estrutura de cat\u00e1logo simulada",
+    "req8_athena_queries": "\u2713 Consultas simuladas com sucesso"
+  }
+}

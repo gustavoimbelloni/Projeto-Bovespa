@@ -1,0 +1,398 @@
+{
+  "name": "bovespa-etl-job",
+  "description": "Job ETL para processar dados da Bovespa - Tech Challenge Fase 2",
+  "role": "AWSGlueServiceRole-bovespa",
+  "glueVersion": "4.0",
+  "maxCapacity": 2,
+  "timeout": 60,
+  "maxRetries": 1,
+  "defaultArguments": {
+    "--enable-metrics": "",
+    "--enable-continuous-cloudwatch-log": "true",
+    "--job-language": "python",
+    "--job-bookmark-option": "job-bookmark-enable"
+  },
+  "connections": [],
+  "securityConfiguration": "",
+  "tags": {
+    "Project": "TechChallenge",
+    "Phase": "2",
+    "Component": "ETL"
+  },
+  "jobMode": "VISUAL",
+  "sourceControlDetails": {},
+  "dag": {
+    "nodes": [
+      {
+        "id": "node-source",
+        "nodeType": "DataSource",
+        "args": [
+          {
+            "name": "database",
+            "value": "default",
+            "param": false
+          },
+          {
+            "name": "table_name",
+            "value": "bovespa_raw_data",
+            "param": false
+          }
+        ],
+        "nodeProperties": {
+          "jobBookmarkKeys": [],
+          "jobBookmarkKeysOnOutput": [],
+          "outputSchemas": [
+            [
+              {
+                "key": "codigo",
+                "fullPath": ["codigo"],
+                "type": "string"
+              },
+              {
+                "key": "acao",
+                "fullPath": ["acao"],
+                "type": "string"
+              },
+              {
+                "key": "tipo",
+                "fullPath": ["tipo"],
+                "type": "string"
+              },
+              {
+                "key": "qtde_teorica",
+                "fullPath": ["qtde_teorica"],
+                "type": "double"
+              },
+              {
+                "key": "participacao_pct",
+                "fullPath": ["participacao_pct"],
+                "type": "double"
+              },
+              {
+                "key": "data_pregao",
+                "fullPath": ["data_pregao"],
+                "type": "string"
+              },
+              {
+                "key": "timestamp_coleta",
+                "fullPath": ["timestamp_coleta"],
+                "type": "string"
+              },
+              {
+                "key": "year",
+                "fullPath": ["year"],
+                "type": "int"
+              },
+              {
+                "key": "month",
+                "fullPath": ["month"],
+                "type": "int"
+              },
+              {
+                "key": "day",
+                "fullPath": ["day"],
+                "type": "int"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "id": "node-rename-columns",
+        "nodeType": "ApplyMapping",
+        "args": [
+          {
+            "name": "mapping",
+            "value": [
+              ["codigo", "string", "codigo", "string"],
+              ["acao", "string", "acao", "string"],
+              ["tipo", "string", "tipo", "string"],
+              ["qtde_teorica", "double", "quantidade_teorica_acoes", "double"],
+              ["participacao_pct", "double", "percentual_participacao_ibov", "double"],
+              ["data_pregao", "string", "data_pregao", "string"],
+              ["timestamp_coleta", "string", "timestamp_coleta", "string"],
+              ["year", "int", "year", "int"],
+              ["month", "int", "month", "int"],
+              ["day", "int", "day", "int"]
+            ],
+            "param": false
+          }
+        ],
+        "nodeProperties": {
+          "jobBookmarkKeys": [],
+          "jobBookmarkKeysOnOutput": [],
+          "outputSchemas": [
+            [
+              {
+                "key": "codigo",
+                "fullPath": ["codigo"],
+                "type": "string"
+              },
+              {
+                "key": "acao",
+                "fullPath": ["acao"],
+                "type": "string"
+              },
+              {
+                "key": "tipo",
+                "fullPath": ["tipo"],
+                "type": "string"
+              },
+              {
+                "key": "quantidade_teorica_acoes",
+                "fullPath": ["quantidade_teorica_acoes"],
+                "type": "double"
+              },
+              {
+                "key": "percentual_participacao_ibov",
+                "fullPath": ["percentual_participacao_ibov"],
+                "type": "double"
+              },
+              {
+                "key": "data_pregao",
+                "fullPath": ["data_pregao"],
+                "type": "string"
+              },
+              {
+                "key": "timestamp_coleta",
+                "fullPath": ["timestamp_coleta"],
+                "type": "string"
+              },
+              {
+                "key": "year",
+                "fullPath": ["year"],
+                "type": "int"
+              },
+              {
+                "key": "month",
+                "fullPath": ["month"],
+                "type": "int"
+              },
+              {
+                "key": "day",
+                "fullPath": ["day"],
+                "type": "int"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "id": "node-date-calculation",
+        "nodeType": "CustomTransform",
+        "args": [
+          {
+            "name": "className",
+            "value": "MyTransform",
+            "param": false
+          },
+          {
+            "name": "code",
+            "value": "from pyspark.sql import functions as F\nfrom pyspark.sql.types import IntegerType\nfrom datetime import datetime\n\ndef MyTransform(glueContext, dfc) -> DynamicFrameCollection:\n    df = dfc.select(list(dfc.keys())[0]).toDF()\n    \n    # Converter timestamp_coleta para timestamp\n    df = df.withColumn(\"timestamp_coleta_ts\", F.to_timestamp(F.col(\"timestamp_coleta\")))\n    \n    # Calcular dias desde a coleta até hoje\n    current_date = F.current_date()\n    df = df.withColumn(\"dias_desde_coleta\", \n                      F.datediff(current_date, F.to_date(F.col(\"timestamp_coleta_ts\"))))\n    \n    # Converter de volta para DynamicFrame\n    dyf = DynamicFrame.fromDF(df, glueContext, \"transformed_data\")\n    \n    return DynamicFrameCollection({\"CustomTransform0\": dyf}, glueContext)",
+            "param": false
+          }
+        ],
+        "nodeProperties": {
+          "jobBookmarkKeys": [],
+          "jobBookmarkKeysOnOutput": [],
+          "outputSchemas": [
+            [
+              {
+                "key": "codigo",
+                "fullPath": ["codigo"],
+                "type": "string"
+              },
+              {
+                "key": "acao",
+                "fullPath": ["acao"],
+                "type": "string"
+              },
+              {
+                "key": "tipo",
+                "fullPath": ["tipo"],
+                "type": "string"
+              },
+              {
+                "key": "quantidade_teorica_acoes",
+                "fullPath": ["quantidade_teorica_acoes"],
+                "type": "double"
+              },
+              {
+                "key": "percentual_participacao_ibov",
+                "fullPath": ["percentual_participacao_ibov"],
+                "type": "double"
+              },
+              {
+                "key": "data_pregao",
+                "fullPath": ["data_pregao"],
+                "type": "string"
+              },
+              {
+                "key": "timestamp_coleta",
+                "fullPath": ["timestamp_coleta"],
+                "type": "string"
+              },
+              {
+                "key": "timestamp_coleta_ts",
+                "fullPath": ["timestamp_coleta_ts"],
+                "type": "timestamp"
+              },
+              {
+                "key": "dias_desde_coleta",
+                "fullPath": ["dias_desde_coleta"],
+                "type": "int"
+              },
+              {
+                "key": "year",
+                "fullPath": ["year"],
+                "type": "int"
+              },
+              {
+                "key": "month",
+                "fullPath": ["month"],
+                "type": "int"
+              },
+              {
+                "key": "day",
+                "fullPath": ["day"],
+                "type": "int"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "id": "node-aggregate",
+        "nodeType": "Aggregate",
+        "args": [
+          {
+            "name": "aggs",
+            "value": [
+              ["quantidade_teorica_acoes", "sum", "total_quantidade_teorica"],
+              ["percentual_participacao_ibov", "avg", "participacao_media"],
+              ["codigo", "count", "total_acoes_por_tipo"]
+            ],
+            "param": false
+          },
+          {
+            "name": "groups",
+            "value": ["tipo", "year", "month", "day"],
+            "param": false
+          }
+        ],
+        "nodeProperties": {
+          "jobBookmarkKeys": [],
+          "jobBookmarkKeysOnOutput": [],
+          "outputSchemas": [
+            [
+              {
+                "key": "tipo",
+                "fullPath": ["tipo"],
+                "type": "string"
+              },
+              {
+                "key": "year",
+                "fullPath": ["year"],
+                "type": "int"
+              },
+              {
+                "key": "month",
+                "fullPath": ["month"],
+                "type": "int"
+              },
+              {
+                "key": "day",
+                "fullPath": ["day"],
+                "type": "int"
+              },
+              {
+                "key": "total_quantidade_teorica",
+                "fullPath": ["total_quantidade_teorica"],
+                "type": "double"
+              },
+              {
+                "key": "participacao_media",
+                "fullPath": ["participacao_media"],
+                "type": "double"
+              },
+              {
+                "key": "total_acoes_por_tipo",
+                "fullPath": ["total_acoes_por_tipo"],
+                "type": "long"
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "id": "node-sink",
+        "nodeType": "DataSink",
+        "args": [
+          {
+            "name": "database",
+            "value": "default",
+            "param": false
+          },
+          {
+            "name": "table_name",
+            "value": "bovespa_refined_data",
+            "param": false
+          },
+          {
+            "name": "transformation_ctx",
+            "value": "DataSink0",
+            "param": false
+          },
+          {
+            "name": "path",
+            "value": "s3://bovespa-refined-data-bucket/refined-data/",
+            "param": false
+          },
+          {
+            "name": "format",
+            "value": "glueparquet",
+            "param": false
+          },
+          {
+            "name": "partitionKeys",
+            "value": ["year", "month", "day", "tipo"],
+            "param": false
+          },
+          {
+            "name": "enableUpdateCatalog",
+            "value": true,
+            "param": false
+          },
+          {
+            "name": "updateBehavior",
+            "value": "UPDATE_IN_DATABASE",
+            "param": false
+          }
+        ],
+        "nodeProperties": {
+          "jobBookmarkKeys": [],
+          "jobBookmarkKeysOnOutput": []
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "node-source",
+        "target": "node-rename-columns"
+      },
+      {
+        "source": "node-rename-columns",
+        "target": "node-date-calculation"
+      },
+      {
+        "source": "node-date-calculation",
+        "target": "node-aggregate"
+      },
+      {
+        "source": "node-aggregate",
+        "target": "node-sink"
+      }
+    ]
+  }
+}
+
